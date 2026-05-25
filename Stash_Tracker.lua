@@ -21,7 +21,10 @@ local mem     = require('memory')
 local MDS = MONET_DPI_SCALE
 local new = imgui.new
 
--- Конфигурация
+-- ============================================================================
+-- CONFIGURATION
+-- ============================================================================
+
 local CFG_FILE = 'stashtracker.ini'
 local cfgDir   = getWorkingDirectory()..'/config'
 if not doesDirectoryExist(cfgDir) then createDirectory(cfgDir) end
@@ -29,15 +32,14 @@ if not doesDirectoryExist(cfgDir) then createDirectory(cfgDir) end
 local settings = inicfg.load({
     main = {
         renderStashes      = true,
-        showStashName      = true,
         showStashLine      = true,
         showStashDistance  = true,
         statisticsWindow   = false,
-        totalStashes       = 0,
-        totalSpawned       = 0,
         stashTimerSize     = 21,
         renderRadius       = 300,
         commandOpenMenu    = 'stash',
+        colorNotSpawned    = 0x0000FFFF,  -- Blue
+        colorSpawned       = 0x00FF00FF,  -- Green
     },
 }, CFG_FILE)
 
@@ -46,45 +48,28 @@ if not doesFileExist(getWorkingDirectory()..'/config/'..CFG_FILE) then
     inicfg.save(settings, CFG_FILE)
 end
 
--- Variables
-local prefix = '{696969}[{DCDCDC}StashTracker{696969}]{696969}: '
-local stashList = {}
-local stashTimerList = {}
-local active = false
-local incar = false
-
--- UI Variables
-local mainWindow = new.bool(false)
-local render = new.bool(true)
-local renderStashes = new.bool(settings.main.renderStashes)
-local showStashName = new.bool(settings.main.showStashName)
-local showStashLine = new.bool(settings.main.showStashLine)
-local showStashDistance = new.bool(settings.main.showStashDistance)
-local statisticsWindow = new.bool(settings.main.statisticsWindow)
-local renderRadius = new.int(settings.main.renderRadius)
-local stashTimerSize = new.int(settings.main.stashTimerSize)
-local commandOpenMenu = new.char[256](u8(settings.main.commandOpenMenu))
-
--- Font
-local font = {}
-
--- Color cache
-local stashColorCache = {}
-
 -- ============================================================================
--- COLOR FUNCTIONS
+-- COLOR SYSTEM - SIMPLE (NO TIME LIMITS)
 -- ============================================================================
 
-local function cachedColor(argb)
-    if not stashColorCache[argb] then
-        local aa = bit.band(bit.rshift(argb,24),0xFF)/255
-        local rr = bit.band(bit.rshift(argb,16),0xFF)/255
-        local gg = bit.band(bit.rshift(argb, 8),0xFF)/255
-        local bb = bit.band(argb,0xFF)/255
-        stashColorCache[argb] = imgui.GetColorU32Vec4(imgui.ImVec4(aa,rr,gg,bb))
+local function getStashColor(spawnTime)
+    local currentTime = os.time()
+    local timeLeft = spawnTime - currentTime
+    
+    if timeLeft <= 0 then
+        -- Green - already spawned
+        return settings.main.colorSpawned  -- 0x00FF00FF
+    else
+        -- Blue - not spawned yet (NO LIMIT)
+        return settings.main.colorNotSpawned  -- 0x0000FFFF
     end
-    return stashColorCache[argb]
 end
+
+-- ============================================================================
+-- UTILITY FUNCTIONS
+-- ============================================================================
+
+local prefix = '{696969}[{DCDCDC}StashTracker{696969}]{696969}: '
 
 local function u32c(r,g,b,a)
     a = a or 1.0
@@ -94,33 +79,6 @@ local function u32c(r,g,b,a)
         bit.lshift(math.min(255,math.floor(g*255+.5)), 8),
                    math.min(255,math.floor(r*255+.5)))
 end
-
--- Function to determine stash color based on spawn time
-local function getStashColor(spawnTime)
-    local currentTime = os.time()
-    local timeLeft = spawnTime - currentTime
-    
-    if timeLeft <= 0 then
-        -- Green - already spawned
-        return 0x00FF00FF
-    elseif timeLeft <= 30 then
-        -- Yellow - 0-30 seconds left
-        return 0xFFFF00FF
-    elseif timeLeft <= 75 then
-        -- Dark Orange - 30-75 seconds (1:15) left
-        return 0xFF8800FF
-    elseif timeLeft <= 180 then
-        -- Red - 75-180 seconds (1:15 - 3:00) left
-        return 0xFF0000FF
-    else
-        -- Don't show - more than 3 minutes left
-        return nil
-    end
-end
-
--- ============================================================================
--- UTILITY FUNCTIONS
--- ============================================================================
 
 local function safeNum(v)
     return tonumber(v) or 0
@@ -141,8 +99,37 @@ local function openLink(url)
     end)
 end
 
+local function cachedColor(argb, cache)
+    if not cache[argb] then
+        local aa = bit.band(bit.rshift(argb,24),0xFF)/255
+        local rr = bit.band(bit.rshift(argb,16),0xFF)/255
+        local gg = bit.band(bit.rshift(argb, 8),0xFF)/255
+        local bb = bit.band(argb,0xFF)/255
+        cache[argb] = imgui.GetColorU32Vec4(imgui.ImVec4(aa,rr,gg,bb))
+    end
+    return cache[argb]
+end
+
 -- ============================================================================
--- IMGUI SETUP
+-- UI VARIABLES
+-- ============================================================================
+
+local mainWindow = new.bool(false)
+local render = new.bool(true)
+local renderStashes = new.bool(settings.main.renderStashes)
+local showStashLine = new.bool(settings.main.showStashLine)
+local showStashDistance = new.bool(settings.main.showStashDistance)
+local statisticsWindow = new.bool(settings.main.statisticsWindow)
+local renderRadius = new.int(settings.main.renderRadius)
+local stashTimerSize = new.int(settings.main.stashTimerSize)
+local commandOpenMenu = new.char[256](u8(settings.main.commandOpenMenu))
+
+local font = {}
+local stashTimerList = {}
+local stashColorCache = {}
+
+-- ============================================================================
+-- IMGUI INITIALIZATION
 -- ============================================================================
 
 imgui.OnInitialize(function()
@@ -161,10 +148,10 @@ imgui.OnInitialize(function()
         font[size] = io.Fonts:AddFontFromFileTTF(ttf, size*MDS, nil, ranges)
     end
     
-    minetools_theme()
+    stash_theme()
 end)
 
-function minetools_theme()
+function stash_theme()
     local s   = imgui.GetStyle()
     local c   = s.Colors
     local C   = imgui.Col
@@ -293,10 +280,6 @@ imgui.OnFrame(
         
         local bW = (winW - 32*MDS) * 0.5
         
-        if imgui.Checkbox(u8('Показывать название'), showStashName) then
-            settings.main.showStashName = showStashName[0]; inicfg.save(settings, CFG_FILE)
-        end
-        
         if imgui.Checkbox(u8('Показывать линию'), showStashLine) then
             settings.main.showStashLine = showStashLine[0]; inicfg.save(settings, CFG_FILE)
         end
@@ -315,13 +298,6 @@ imgui.OnFrame(
         end
         imgui.PopItemWidth()
         
-        imgui.Separator()
-        
-        if imgui.Checkbox(u8('Статистика'), statisticsWindow) then
-            settings.main.statisticsWindow = statisticsWindow[0]; inicfg.save(settings, CFG_FILE)
-        end
-        
-        imgui.Spacing()
         imgui.Separator()
         imgui.Spacing()
         
@@ -350,20 +326,20 @@ imgui.OnFrame(
                     local v    = stashTimerList[k]
                     local diff = v[4] - os.time()
                     
-                    if diff < -180 then
-                        -- Remove if more than 3 minutes past spawn
+                    -- NO TIME LIMIT - Keep showing indefinitely
+                    if diff < -86400 then
+                        -- Remove if more than 24 hours past spawn (safety)
                         table.remove(stashTimerList, k)
                     else
                         local color = getStashColor(v[4])
                         
-                        -- Only render if color is not nil (not more than 3 min until spawn)
                         if color then
                             local ok_s, tx, ty = pcall(convert3DCoordsToScreen, v[1], v[2], v[3])
                             if ok_s and tx and ty then
                                 local dist    = math.floor(safeDist3d(v[1],v[2],v[3],mx,my,mz))
                                 
                                 if dist <= radius and isPointOnScreen(v[1], v[2], v[3], 0) then
-                                    local col = cachedColor(color)
+                                    local col = cachedColor(color, stashColorCache)
                                     
                                     if showStashLine[0] then
                                         DL:AddLine(imgui.ImVec2(tx,ty), imgui.ImVec2(cx,cy), u32c(0,0,0,0.35), 3.5*MDS)
@@ -416,10 +392,8 @@ function sampev.onCreate3DText(id, color, position, dist, testLOS, player, vehic
         local py = tonumber(type(position)=='table' and position.y or nil)
         local pz = tonumber(type(position)=='table' and position.z or nil)
         if px and py and pz then
-            -- Add to stash list with spawn time (now)
+            -- Add to stash list with spawn time (375 seconds)
             table.insert(stashTimerList, {px, py, pz, os.time() + 375})
-            settings.main.totalStashes = settings.main.totalStashes + 1
-            inicfg.save(settings, CFG_FILE)
         end
     end
 end
@@ -442,21 +416,9 @@ function main()
     
     sampAddChatMessage('{FF8C00}> {FFCC00}Stash Tracker {FF8C00}| {FFFFFF}\xc0\xe2\xf2\xee\xf0: {FFD700}Victor Strand', -1)
     sampAddChatMessage('{FF8C00}> {AAAAAA}\xcc\xe5\xed\xfe: {FFFFFF}/'..settings.main.commandOpenMenu, -1)
-    sampAddChatMessage('{FF8C00}> {00CC66}\xd2\xf0\xe0\xea\xe5\xf0 \xf2\xe0\xe9\xed\xe8\xea\xee\xe2 \xd7\xe0\xf5\xf2\xe5\xf0\xf1\xea\xe8\xe9 \xd3\xe4\xe0\xf7\xe8!', -1)
+    sampAddChatMessage('{FF8C00}> {00CC66}\xd2\xf0\xe0\xea\xe5\xf0 \xf2\xe0\xe9\xed\xe8\xea\xee\xe2 \xca\xe0\xf8\xf2\xeb\xfc\xe1\xe0! \xd3\xe4\xe0\xf7\xe8!', -1)
     
     while true do
         wait(0)
-        
-        local ok2, ic = pcall(isCharInAnyCar, PLAYER_PED)
-        if ok2 then incar = ic end
     end
 end
-
--- ============================================================================
--- SPAWN TIMER COLOR LEGEND:
--- ============================================================================
--- 🟢 GREEN (0x00FF00FF) - Already spawned (timeLeft <= 0)
--- 🟡 YELLOW (0xFFFF00FF) - 0-30 seconds until spawn
--- 🟠 DARK ORANGE (0xFF8800FF) - 30-75 seconds (1:15) until spawn
--- 🔴 RED (0xFF0000FF) - 75-180 seconds (1:15 - 3:00) until spawn
--- ⚫ NOT SHOWN - More than 3 minutes until spawn
