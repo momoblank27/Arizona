@@ -1,478 +1,251 @@
-# 📱 ArizonaX Mobile UI & ESP Framework
-
-**Advanced MoonLoader UI System for SAMP Mobile Servers**
-
-[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/momoblank27/Arizona)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Lua](https://img.shields.io/badge/lua-5.1+-yellow.svg)](https://www.lua.org/)
+# 📱 ArizonaX - Mine Tools & Stash Tracker System
+**Advanced Mining & Stash Tracking System for SA-MP Mobile**
 
 ---
 
-## ✨ Основные возможности
+## 📦 Скрипты в репозитории
 
-- ✅ **Drag-and-Drop** система перемещения окон
-- ✅ **Ползунки (Sliders)** для управления значениями  
-- ✅ **Интерактивные кнопки** с колбеками
-- ✅ **ESP система** с визуализацией объектов
-- ✅ **Динамическое масштабирование** UI
-- ✅ **Оптимизированный рендеринг** с кешированием
-- ✅ **Преобразование 3D → 2D** координат
-- ✅ **Сканирование мира** с фильтрацией объектов
+### 1. **Mine_Tools.lua** v1.1
+**Полнофункциональная система отслеживания руды с динамической визуализацией**
 
----
+#### 🎨 Динамическая система цветов (по времени спавна):
+| Цвет | Время до спавна | Статус |
+|------|-----------------|--------|
+| 🟢 Зеленый | ≤ 0 сек | Руда уже спавнилась |
+| 🟡 Желтый | 0-30 сек | Вот-вот спавнится |
+| 🟠 Темно-оранжевый | 30-75 сек (1:15) | Скоро спавнится |
+| 🔴 Красный | 75-180 сек (1:15-3:00) | Ожидание спавна |
+| ⚫ Не показывается | > 180 сек | Слишком далеко (скрыто) |
 
-## 📦 Структура проекта
+#### ✨ Основные функции:
+- ✅ **Автоматическое отслеживание руды** - ловит 3D текст спавна
+- ✅ **Таймер обратного отсчета** - показывает MM:SS до спавна
+- ✅ **Визуальные линии** - стрелки к месту спавна руды
+- ✅ **Динамическая окраска** - цвет зависит от времени до спавна
+- ✅ **Определение типа руды** - Камень, Металл, Золото
+- ✅ **Статистика** - счет добытой руды и заработка
+- ✅ **Радиус отображения** - настраиваемый (1-600м)
+- ✅ **Оптимизированный рендеринг** - правильная работа с мобильными устройствами
 
+#### 🎮 Команды:
 ```
-Arizona/
-├── lua/
-│   ├── mobile_ui_framework.lua    # Основной UI фреймворк
-│   └── esp_system.lua             # ESP система визуализации
-├── main.lua                       # Пример интеграции
-├── README.md                      # Документация
-├── LICENSE                        # MIT License
-└── docs/
-    └── INDEX.md                   # Полная документация
+/mt              - Открыть/закрыть главное меню
+/mtore           - Включить/выключить отображение руды
+/mttimer         - Включить/выключить таймер
+```
+
+---
+
+### 2. **Stash_Tracker.lua** v1.0
+**Система отслеживания тайников с простой двухцветной системой**
+
+#### 🎨 Система цветов (без ограничений по времени):
+| Цвет | Статус |
+|------|--------|
+| 🔵 Синий | Тайник еще не спавнился (показывает MM:SS до спавна) |
+| 🟢 Зеленый | Тайник уже появился (показывает [СПАВН]) |
+
+#### ✨ Основные функции:
+- ✅ **Автоматическое отслеживание тайников** - ловит 3D текст
+- ✅ **Таймер спавна** - обратный отсчет без ограничений
+- ✅ **Визуальные линии** - стрелки к месту спавна
+- ✅ **Показатель расстояния** - видно расстояние до тайника
+- ✅ **Двухцветная система** - Синий (ожидание) / Зеленый (спавнился)
+- ✅ **Меню управления** - полный контроль над отображением
+- ✅ **Конфигурация сохраняется** - параметры сохраняются в stashtracker.ini
+
+#### 🎮 Команды:
+```
+/stash           - Открыть/закрыть меню Stash Tracker
 ```
 
 ---
 
 ## 🚀 Быстрый старт
 
-### 1. Инициализация
+### Требования:
+- ✅ MonetLoader 0.26+
+- ✅ Lua 5.1+
+- ✅ GTA: San Andreas SAMP
+- ✅ Android 5.0+ или iOS 9+ (Mobile)
+
+### Установка:
+1. Скопируйте **Mine_Tools.lua** и **Stash_Tracker.lua** в папку `moonloader/`
+2. Перезагрузите игру
+3. В чате появятся сообщения о загрузке скриптов
+4. Используйте команды `/mt` и `/stash`
+
+---
+
+## 🎯 Особенности совместимости с Arizona Mobile
+
+✅ **Arizona Mode Support:**
+- Полная совместимость с официальным приложением Arizona Mobile
+- Использует стандартные функции MoonLoader
+- Поддержка преобразования 3D → 2D координат
+- Оптимизирован для мобильных экранов (Android/iOS)
+
+### Проверенные функции:
+```lua
+getCharCoordinates(PLAYER_PED)        ✓ Получение координат
+convert3DCoordsToScreen()              ✓ Преобразование 3D→2D
+isPointOnScreen()                      ✓ Проверка видимости
+renderDrawLine()                       ✓ Отрисовка линий
+sampAddChatMessage()                   ✓ Сообщения в чат
+sampRegisterChatCommand()              ✓ Команды в чат
+isKeyDown()                            ✓ Обработка клавиш
+getCursorPos()                         ✓ Позиция мыши/тача
+```
+
+---
+
+## 📊 Система цветов - Детальное объяснение
+
+### Mine_Tools - Динамическая система (с ограничениями):
+
+```
+Время до спавна:        Цвет:         Показывается:
+0 сек (спавнился)  → 🟢 ЗЕЛЕНЫЙ       ДА
+1-30 сек           → 🟡 ЖЕЛТЫЙ        ДА
+31-75 сек (1:15)   → 🟠 ОРАНЖЕВЫЙ     ДА
+76-180 сек (3:00)  → 🔴 КРАСНЫЙ       ДА
+> 180 сек          → ⚫ НЕВИДИМО       НЕТ (скрыто)
+```
+
+### Stash_Tracker - Простая система (без ограничений):
+
+```
+Статус:              Цвет:           Показывается:
+Не спавнился    → 🔵 СИНИЙ            ДА (всегда с таймером)
+Спавнился       → 🟢 ЗЕЛЕНЫЙ          ДА (показывает [СПАВН])
+```
+
+---
+
+## 🛠️ Конфигурационные файлы
+
+### minetools.ini (Mine_Tools):
+```ini
+[main]
+renderOre=true              # Отображать ли руду
+renderRadius=100            # Радиус отображения (м)
+renderSize=21               # Размер шрифта руды
+oreTimer=true               # Включить таймер
+commandOpenMenu=mt          # Команда открытия меню
+```
+
+### stashtracker.ini (Stash_Tracker):
+```ini
+[main]
+renderStashes=true          # Отображать ли тайники
+renderRadius=300            # Радиус отображения (м)
+stashTimerSize=21           # Размер шрифта таймера
+commandOpenMenu=stash       # Команда открытия меню
+colorNotSpawned=0x0000FFFF # Синий (не спавнился)
+colorSpawned=0x00FF00FF    # Зеленый (спавнился)
+```
+
+---
+
+## 🔍 Определение типа руды
+
+Скрипты автоматически определяют тип руды по текстуре:
 
 ```lua
-local UIFramework = require("lua.mobile_ui_framework")
-local ESPSystem = require("lua.esp_system")
+['cs_rockdetail2'] = 1  -- Камень (Stone)
+['ab_flakeywall']  = 2  -- Камень (Stone)
+['metalic128']     = 3  -- Металл (Metal)
+['Strip_Gold']     = 4  -- Золото (Gold)
+['gold128']        = 5  -- Золото (Gold)
+```
 
-function main()
-    while not isSampAvailable() do wait(100) end
-    
-    -- Инициализируем фреймворк
-    UIFramework:initialize()
-    ESPSystem:initialize(UIFramework.state.fonts.main, UIFramework.state.fonts.small)
-    
-    -- Команды
-    sampRegisterChatCommand("mmenu", function()
-        UIFramework:toggleMenu()
-    end)
-    
-    -- Основной цикл
-    while true do
-        wait(0)
-        if UIFramework.state.menuVisible then
-            UIFramework:render()
-        end
-    end
+---
+
+## 📈 Оптимизация для Mobile
+
+### Рекомендованные настройки:
+```lua
+renderRadius = 200-300   -- Оптимальное расстояние
+renderSize = 18-24       -- Размер шрифта для мобильного
+updateInterval = 150мс   -- Интервал обновления
+```
+
+### Потребление ресурсов:
+- Mine_Tools: ~3-5 MB
+- Stash_Tracker: ~2-3 MB
+- **Итого: ~5-8 MB** при нормальной работе
+
+---
+
+## ⚠️ Известные особенности
+
+1. **3D текст должен быть видим** - если текст вне экрана, таймер не создается
+2. **Преобразование 3D→2D** - работает только если точка видна на экране
+3. **Радиус не абсолютный** - отображение зависит от видимости на экране
+4. **Таймер точность** - зависит от синхронизации с сервером
+
+---
+
+## 🔧 Установка и тестирование
+
+### Проверка совместимости:
+```lua
+-- Тест 1: Координаты
+local x, y, z = getCharCoordinates(PLAYER_PED)
+print(x, y, z)  -- Должны вывести координаты
+
+-- Тест 2: Преобразование 3D→2D
+local sx, sy = convert3DCoordsToScreen(x, y, z)
+print(sx, sy)   -- Должны вывести экранные координаты
+
+-- Тест 3: На экране ли точка?
+if isPointOnScreen(x, y, z, 0) then
+    print("Видно на экране!")
 end
 ```
 
-### 2. Команды в игре
+---
 
+## 📞 Поддержка и информация
+
+**Автор:** Victor Strand  
+**Версия:** 1.1-monet (Mine_Tools), 1.0-monet (Stash_Tracker)  
+**Платформа:** MonetLoader Android  
+**Сервер:** Arizona RP (SA-MP)
+
+---
+
+## 🎓 Документация API
+
+### Mine_Tools Functions:
+```lua
+getOreTimerColor(spawnTime)      -- Получить цвет по времени спавна
+getOreTypeName(textureId)        -- Получить название типа руды
+playOreSound()                   -- Воспроизвести звук добычи
 ```
-/mmenu              - Открыть/закрыть меню
-/esp                - Включить/отключить ESP
-/esplines           - Включить/отключить линии
-/uiinfo             - Информация отладки
+
+### Stash_Tracker Functions:
+```lua
+getStashColor(spawnTime)         -- Получить цвет (Синий/Зеленый)
+getStashTimerString(timeLeft)    -- Получить строку таймера (MM:SS)
 ```
 
 ---
 
-## 📚 API Фреймворка
+## 📝 История обновлений
 
-### UIFramework Methods
+### Mine_Tools v1.1:
+- ✨ Добавлена динамическая система цветов
+- ✨ Правильное определение типа руды (Камень/Металл/Золото)
+- 🐛 Исправлена ошибка с скрытием руды > 3 минут
+- 🎨 Улучшена визуализация таймера
 
-#### Инициализация
-
-```lua
-UIFramework:initialize()              -- Полная инициализация
-UIFramework:initializeFonts()         -- Создание шрифтов (один раз)
-UIFramework:initializeScaling()       -- Инициализировать масштаб
-```
-
-#### Управление меню
-
-```lua
-UIFramework:toggleMenu()              -- Переключить видимость
-UIFramework:setMenuVisible(true)      -- Установить видимость
-UIFramework:setMenuPosition(50, 100)  -- Установить позицию
-UIFramework:getMenuPosition()         -- Получить позицию
-UIFramework:getState()                -- Получить состояние
-```
-
-#### Ползунки
-
-```lua
-UIFramework:renderSlider(id, label, min, max, x, y, width, mouseX, mouseY, mouseButton)
-UIFramework:getSliderValue(id)        -- Получить значен��е
-UIFramework:setSliderValue(id, value) -- Установить значение
-```
-
-#### Кнопки
-
-```lua
-UIFramework:registerButton(id, label, x, y, width, height, callback)
-UIFramework:renderButton(id, mouseX, mouseY, mouseButton)
-```
-
-#### Отрисовка
-
-```lua
-UIFramework:render()                  -- Главная функция отрисовки
-UIFramework:renderMenu(mouseX, mouseY, mouseButton, buttons, sliders)
-```
+### Stash_Tracker v1.0:
+- ✨ Первый релиз
+- ✨ Двухцветная система (Синий/Зеленый)
+- ✨ Интеграция с конфигурацией
 
 ---
 
-## 🎯 Система Drag-and-Drop
-
-**Как это работает:**
-
-1. ✅ Отслеживаем нажатие левой кнопки мыши (0x01) на заголовке меню
-2. ✅ Вычисляем смещение курсора от левого края окна
-3. ✅ При движении мыши плавно обновляем позицию меню
-4. ✅ Ограничиваем координаты границами экрана
-
-**Пример кода:**
-
-```lua
-function UIFramework:handleDragAndDrop()
-    local mouseX, mouseY = getCursorPos()
-    local inHeader = self:isPosInArea(mouseX, mouseY, headerX, headerY, headerW, headerH)
-    
-    if isKeyDown(0x01) and inHeader then
-        if not self.state.dragging then
-            self.state.dragging = true
-            self.state.dragOffsetX = mouseX - self.state.menuX
-        end
-    else
-        self.state.dragging = false
-    end
-    
-    if self.state.dragging then
-        self.state.menuX = mouseX - self.state.dragOffsetX
-        self:clampMenuPosition()
-    end
-end
-```
-
----
-
-## 🎚️ Система Ползунка (Slider)
-
-**Особенности:**
-
-- ✅ Визуальная отрисовка трека и ручки
-- ✅ Обработка кликов на трек (мгновенное перемещение)
-- ✅ Обработка удержания на ручке (плавное перемещение)
-- ✅ Привязка к диапазону min/max
-- ✅ Callbacks при изменении значения
-
-**Пример использования:**
-
-```lua
-local sliders = {
-    {
-        id = "slider_speed",
-        label = "Скорость:",
-        min = 1,
-        max = 50,
-        value = 25,
-        onChanged = function(val)
-            print("Скорость: " .. val)
-        end
-    }
-}
-
--- Отрисовка
-UIFramework:renderSlider(
-    "slider_speed",           -- ID
-    "Скорость:",              -- Метка
-    1, 50,                    -- Min, Max
-    50, 100,                  -- X, Y позиция
-    200,                      -- Ширина
-    mouseX, mouseY,           -- Координаты мыши
-    isKeyDown(0x01) and 0x01  -- Статус кнопки мыши
-)
-
--- Получить значение
-local speed = UIFramework:getSliderValue("slider_speed")
-```
-
----
-
-## 📊 ESP Система
-
-### Регистрация объектов
-
-```lua
--- Абстрактный пример: сканирование объектов
-for _, objectHandle in ipairs(getAllObjects()) do
-    if getObjectModel(objectHandle) == TARGET_MODEL_ID then
-        local x, y, z = getObjectCoordinates(objectHandle)
-        
-        ESPSystem:registerObject(
-            objectHandle,      -- ID объекта
-            "object",          -- Тип: "player", "object", "vehicle", "item"
-            TARGET_MODEL_ID,   -- Model ID
-            x, y, z,           -- 3D координаты
-            "Target"           -- Текстовая метка
-        )
-    end
-end
-```
-
-### Преобразование координат (3D → 2D)
-
-**Основная концепция:**
-
-```lua
--- Получаем 3D мировые координаты
-local playerX, playerY, playerZ = getCharCoordinates(PLAYER_PED)
-local objectX, objectY, objectZ = 123.4, 567.8, 910.1
-
--- Преобразуем 3D координаты в 2D экранные
-local startX, startY = convert3DCoordsToScreen(playerX, playerY, playerZ)
-local endX, endY = convert3DCoordsToScreen(objectX, objectY, objectZ)
-
--- Если обе точки видны на экране (не nil), рисуем линию
-if startX and endX then
-    renderDrawLine(startX, startY, endX, endY, 0xFF2196F3, 2)
-end
-```
-
-**Абстрактные примеры сканирования:**
-
-```lua
---[[ ПРИМЕР 1: Сканирование объектов ]]
-for _, objectHandle in ipairs(getAllObjects()) do
-    if getObjectModel(objectHandle) == 1234 then
-        local x, y, z = getObjectCoordinates(objectHandle)
-        -- Использование в ESP...
-    end
-end
-
---[[ ПРИМЕР 2: Сканирование игроков ]]
-for _, playerId in ipairs(getAllPlayers()) do
-    if playerId ~= SELECT_PLAYER_ID() then
-        local ped = getCharFromPlayerHandle(playerId)
-        local x, y, z = getCharCoordinates(ped)
-        -- Использование в ESP...
-    end
-end
-
---[[ ПРИМЕР 3: Сканирование транспорта ]]
-for _, vehicleId in ipairs(getAllVehicles()) do
-    local vx, vy, vz = getVehicleCoordinates(vehicleId)
-    -- Использование в ESP...
-end
-```
-
-### Методы ESP
-
-```lua
-ESPSystem:initialize(fontMain, fontSmall)    -- Инициализация
-ESPSystem:registerObject(id, type, modelId, x, y, z, label)  -- Добавить объект
-ESPSystem:render()                           -- Отрисовать все
-ESPSystem:scanWorld()                        -- Сканировать мир
-ESPSystem:clearCache()                       -- Очистить кеш
-ESPSystem:printStats()                       -- Статистика
-```
-
----
-
-## 🎨 Цветовая палитра
-
-### Material Design Palette
-
-```lua
--- UI Framework Colors
-colors = {
-    header = 0xFF2196F3,        -- Синий (заголовок)
-    background = 0xFF1E1E1E,    -- Черный (фон)
-    button = 0xFF424242,        -- Серый (кнопка)
-    button_hover = 0xFF616161,  -- Светло-серый (наведение)
-    slider_bg = 0xFF424242,     -- Серый (фон ползунка)
-    slider_active = 0xFF2196F3, -- Синий (активный ползунок)
-    text = 0xFFFFFFFF,          -- Белый (текст)
-    text_shadow = 0xFF000000    -- Черный (тень)
-}
-
--- ESP System Colors
-esp_colors = {
-    player = 0xFF4CAF50,        -- Зеленый (игроки)
-    npc = 0xFF2196F3,           -- Синий (NPC)
-    object = 0xFFFF9800,        -- Оранжевый (объекты)
-    vehicle = 0xFF9C27B0,       -- Фиолетовый (машины)
-    target = 0xFFF44336,        -- Красный (враги)
-    item = 0xFFFFEB3B,          -- Желтый (предметы)
-    line = 0xFF2196F3           -- Синий (линии)
-}
-```
-
----
-
-## ⚙️ Конфигурация
-
-### Размеры элементов
-
-```lua
-UIFramework.config = {
-    menu_width = 280,          -- Ширина меню
-    menu_height = 400,         -- Высота меню
-    header_height = 30,        -- Высота заголовка
-    button_height = 35,        -- Высота кнопки
-    slider_height = 45,        -- Высота ползунка
-    padding = 10               -- Внутренний отступ
-}
-```
-
-### Параметры ESP
-
-```lua
-ESPSystem.config = {
-    maxDistance = 500,         -- Макс расстояние (м)
-    markerSize = 8,            -- Размер маркера (px)
-    lineWidth = 2,             -- Толщина линии
-    updateInterval = 100       -- Интервал обновления (мс)
-}
-```
-
----
-
-## 💻 Примеры кода
-
-### Пример 1: Создание простого меню
-
-```lua
-local buttons = {
-    {
-        id = "btn_start",
-        label = "▶ Запустить",
-        callback = function()
-            sampAddChatMessage("Запущено!", 0x00FF00)
-        end
-    }
-}
-
-UIFramework:renderMenu(mouseX, mouseY, mouseButton, buttons, {})
-```
-
-### Пример 2: Использование ползунка
-
-```lua
-local sliders = {
-    {
-        id = "slider_volume",
-        label = "Громкость:",
-        min = 0,
-        max = 100,
-        value = 50
-    }
-}
-
-UIFramework:renderMenu(mouseX, mouseY, mouseButton, {}, sliders)
-local volume = UIFramework:getSliderValue("slider_volume")
-```
-
-### Пример 3: ESP с визуализацией
-
-```lua
--- Получаем координаты игрока
-local playerX, playerY, playerZ = getCharCoordinates(PLAYER_PED)
-
--- Сканируем объекты
-for _, objectHandle in ipairs(getAllObjects()) do
-    if getObjectModel(objectHandle) == 1234 then
-        local x, y, z = getObjectCoordinates(objectHandle)
-        ESPSystem:registerObject(objectHandle, "object", 1234, x, y, z, "Target")
-    end
-end
-
--- Отрисовываем
-ESPSystem:render(playerX, playerY, playerZ)
-```
-
----
-
-## 🔧 Системные требования
-
-- **MoonLoader** 0.26+
-- **Lua** 5.1+
-- **GTA: San Andreas** (SAMP)
-- **Мобильное устройство** (Android/iOS)
-
----
-
-## 📊 Оптимизация производительности
-
-### Ключевые улучшения
-
-✅ **Кеширование шрифтов** - создаются один раз при инициализации  
-✅ **Структурированные данные** - упрощение управления компонентами  
-✅ **Интервалы обновления** - снижение нагрузки на процессор  
-✅ **Фильтрация расстояния** - отрисовка только видимых объектов  
-✅ **Динамическое масштабирование** - адаптация под разные экраны  
-
-### Рекомендации по использованию
-
-- Используйте интервалы обновления ESP: 100-200мс
-- Ограничьте максимальное расстояние: 300-500м
-- Отключайте линии при 100+ объектах
-- Кешируйте результаты поиска объектов
-
----
-
-## 🐛 Отладка
-
-### Включить режим отладки
-
-```lua
--- Информация о фреймворке
-UIFramework:printDebugInfo()
-
--- Статистика ESP
-ESPSystem:printStats()
-
--- Получить состояние
-local state = UIFramework:getState()
-print("Menu:", state.menuX, state.menuY)
-print("Scale:", state.scale)
-```
-
----
-
-## 📝 Лицензия
-
-**MIT License** - Свободное использование и модификация
-
----
-
-## 👥 Авторы
-
-- **MoonLoader Dev** - Разработчик основного фреймворка
-- **ArizonaX Team** - Интеграция и оптимизация
-
----
-
-## 📞 Поддержка
-
-Для вопросов и предложений:
-- 🔗 GitHub Issues: [ArizonaX Issues](https://github.com/momoblank27/Arizona/issues)
-- 💬 GitHub Discussions
-
----
-
-## 🔗 Полезные ссылки
-
-- [MoonLoader GitHub](https://github.com/qo-op/MoonLoader)
-- [SAMP Documentation](https://www.sa-mp.com/)
-- [Lua Documentation](https://www.lua.org/docs.html)
-- [Material Design Colors](https://material.io/design/color)
-
----
-
-**Made with ❤️ for ArizonaX Server**
-
-**Last Updated:** 2026-05-25  
-**Version:** 2.0.0
+**Made with ❤️ for ArizonaX Server**  
+**Последнее обновление:** 2026-05-25
